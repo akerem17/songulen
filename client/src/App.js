@@ -394,9 +394,11 @@ class App extends Component {
     return (
       <div style={{height: '100%'}}>
         {!this.state.nameEntered && (
-          <div>
-            <input type="text" onChange={(evt) => this.setState({name: evt.target.value.substring(0, 6).toLowerCase()})} />
-            <button disabled={!this.state.name} onClick={this.start}>START!</button>
+          <div class="start-div">
+            <p>Adını yaz ve oyuna başla!</p>
+            <p>Oyun kişi olunca başlar.</p>
+            <input type="text" onChange={(evt) => this.setState({name: evt.target.value.substring(0, 10).toLowerCase()})} />
+            <button disabled={!this.state.name} onClick={this.start}>BAŞLA!</button>
           </div>
         )}
         <div style={{height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'black'}}>
