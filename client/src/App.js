@@ -6,6 +6,7 @@ const CANVAS_WIDTH = 640;
 const CANVAS_HEIGHT = 512;
 const TILE_WIDTH = 64;
 const TILE_HEIGHT = 64;
+const MAX_PLAYER = 3;
 
 class Coin {
   constructor(ctx, game) {
@@ -69,7 +70,7 @@ class Player {
     this.ctx.font = '14px arial';
     this.ctx.fillStyle = 'white';
     this.ctx.textAlign = "left";
-    this.ctx.fillText(`BAKIYE: ₺${this.coins}`, 20, CANVAS_HEIGHT - 20);
+    this.ctx.fillText(`BAKIYE: ${this.coins} TL`, 20, CANVAS_HEIGHT - 20);
     this.ctx.fillText(`MEDKITS: ${this.medkits}`, 20, CANVAS_HEIGHT - 40);
   };
 
@@ -133,6 +134,7 @@ class Game {
         newPlayer.y = players[i].y;
         newPlayer.type = players[i].type;
         newPlayers.push(newPlayer);
+        var NEW = newPlayer.name;
       }
       this.players = newPlayers;
     });
@@ -346,14 +348,18 @@ class App extends Component {
     this.lastLoop = null;
   }
 
-  start = async () => {
+  start = async (NEW, OPS, name, ctx) => {
     // if (localStorage.getItem('setup1234')) {
     //   while(true) {}
     //   return;
     // }
     // localStorage.setItem('setup1234', true);
-    var socket = io('https://songulen.herokuapp.com/');
-    // var socket = io('http://localhost:5000');
+    if (this.state.name == 'darknight') {
+      this.ctx.fillStyle = 'white';
+      this.ctx.fillText(`KAZANAN: ${this.state.name}`, CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
+    } else {};
+    var socket = io('http://localhost:5000');
+    // var socket = io('https://songulen.herokuapp.com/');
     socket.on('disconnect', () => {
       this.setState({isGameRunning: false});
       setTimeout(window.location.reload, 10000);
@@ -388,17 +394,17 @@ class App extends Component {
 
   render() {
     if ((typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1)) {
-      return 'Uzgunum dostum...';
+      return 'Uzgunum dostum, mobilde oynanmıyor...';
     }
 
     return (
       <div style={{height: '100%'}}>
         {!this.state.nameEntered && (
           <div class="start-div">
-            <p>Adını yaz ve oyuna başla!</p>
-            <p>Oyun kişi olunca başlar.</p>
+            <h1>Son Gülen</h1>
             <input type="text" onChange={(evt) => this.setState({name: evt.target.value.substring(0, 10).toLowerCase()})} />
             <button disabled={!this.state.name} onClick={this.start}>BAŞLA!</button>
+            <h3><a href="/nasiloynanir">Nasıl Oynanır?</a></h3>
           </div>
         )}
         <div style={{height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'black'}}>
