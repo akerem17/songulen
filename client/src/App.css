@@ -12,7 +12,7 @@ button {
   background: #00a9d9;
   border: 2px solid #ccc;
   width: 100px;
-  height: 50px;
+  height: 48px;
   transition-duration: 0.4s;
 }
 
@@ -21,17 +21,19 @@ button:hover {
 }
 
 input {
-  font-size: 30px;
+  font-size: 25px;
   width: 200px;
   height: 44px;
-  position: center;
+}
+
+h1 {
+  color: #fff;
+  font-size: 40px;
   float: center;
 }
 
-p {
+h3 {
   color: #fff;
-  font-size: 60px;
-  float: center;
 }
 
 .start-div {
