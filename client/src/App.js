@@ -354,10 +354,6 @@ class App extends Component {
     //   return;
     // }
     // localStorage.setItem('setup1234', true);
-    if (this.state.name == 'darknight') {
-      this.ctx.fillStyle = 'white';
-      this.ctx.fillText(`KAZANAN: ${this.state.name}`, CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
-    } else {};
     var socket = io('http://localhost:5000');
     // var socket = io('https://songulen.herokuapp.com/');
     socket.on('disconnect', () => {
