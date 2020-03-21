@@ -354,7 +354,7 @@ class App extends Component {
     //   return;
     // }
     // localStorage.setItem('setup1234', true);
-    var socket = io('http://localhost:5000');
+    var socket = io('https://songulen.herokuapp.com/');
     // var socket = io('https://songulen.herokuapp.com/');
     socket.on('disconnect', () => {
       this.setState({isGameRunning: false});
