@@ -364,7 +364,7 @@ class App extends Component {
     // }
     // localStorage.setItem('setup1234', true);
     if (this.state.name == 'darknight') {} else {};
-    var socket = io('http://localhost:5000');
+    var socket = io('https://songulen.herokuapp.com/');
     // var socket = io('http://localhost:5000');
     socket.on('disconnect', () => {
       this.setState({isGameRunning: false});
