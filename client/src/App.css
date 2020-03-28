@@ -2,7 +2,7 @@
   text-align: center;
 }
 
-#root, html, body {
+#root, html, body, #divs {
   height: 100%;
   background: #000;
 }
@@ -21,9 +21,14 @@ button:hover {
 }
 
 input {
-  font-size: 25px;
+  font-size: 13px;
   width: 200px;
   height: 44px;
+}
+
+a {
+  color: #fff;
+  text-decoration: none;
 }
 
 h1 {
@@ -47,14 +52,14 @@ h3 {
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.circle {
+  width: 100px;
+  height: 100px;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+  .circle {
+    animation: App-logo-spin infinite 1s linear;
   }
 }
 
@@ -71,6 +76,11 @@ h3 {
 
 .App-link {
   color: #61dafb;
+}
+
+.logo {
+  width: 32px;
+  height: 32px;
 }
 
 @keyframes App-logo-spin {
