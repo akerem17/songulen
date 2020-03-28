@@ -23,6 +23,7 @@ app.set('port', port);
 
 var server = http.createServer(app);
 var io = socketIO(server);
+var MAX_PLAYER = '2';
 
 var calculateDistance = function calculateDistance(x1, x2, y1, y2) {
   return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
@@ -51,7 +52,7 @@ var Player = function(game, id) {
   this.targetY = this.y;
   this.dirx = 0;
   this.diry = 0;
-  this.type = Math.floor(Math.random() * 3);
+  this.type = Math.floor(Math.random() * 4);
 
   // oyun ici dinamikler
   this.health = 100;
@@ -146,10 +147,12 @@ Game.prototype.addPlayer = function addPlayer (id) {
   this.players.push(new Player(this, id));
 }
 
-Game.prototype.update = function update() {
-  if (this.players.length === 2) {
-    this.isStarted = true;
-  }
+Game.prototype.update = function update(MAX_PLAYER) {
+    if (this.players.length >= '2') {
+      const Function1 = setTimeout(() => {
+         this.isStarted = true;
+      }, 5000);
+    }
 
   if (!this.isStarted)
     return;
