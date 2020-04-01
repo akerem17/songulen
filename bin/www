@@ -30,6 +30,7 @@ var calculateDistance = function calculateDistance(x1, x2, y1, y2) {
 }
 
 const OPS = ('darknight');
+const TYPEWHAT = (1);
 
 var Coin = function(game) {
   const numberOfTilesX = game.layers[0][0].length - 4;
@@ -39,10 +40,11 @@ var Coin = function(game) {
   this.collected = false;
 };
 
-var Player = function(game, id) {
+var Player = function(game, id, type) {
   this.game = game;
   this.id = id;
   this.isDead = false;
+  this.moderator = false;
   this.name = '';
   this.health = 100;
   // pozisyon degerleri
@@ -106,18 +108,24 @@ var Game = function Game(){
   this.players = [];
   this.layers = [
     [
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1],
-      [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
-      [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ]
   ];
   this.coins = [new Coin(this)];
@@ -148,10 +156,12 @@ Game.prototype.addPlayer = function addPlayer (id) {
 }
 
 Game.prototype.update = function update(MAX_PLAYER) {
-    if (this.players.length >= '2') {
+    if (this.players.length >= 2) {
       const Function1 = setTimeout(() => {
-         this.isStarted = true;
-      }, 5000);
+        if (this.players.length < 2) {
+          {Function1} } else {
+             this.isStarted = true;
+          }}, 5000);
     }
 
   if (!this.isStarted)
@@ -173,7 +183,7 @@ Game.prototype.update = function update(MAX_PLAYER) {
   }
 
   const now = Date.now();
-  const targetCoin = Math.floor(this.circleClosingDistance / 50);
+  const targetCoin = Math.floor(this.circleClosingDistance / 25);
   if (this.coins.length < targetCoin && now - this.lastCoinCreated > 5000) {
     console.log('adding coin');
     this.addCoin();
@@ -270,6 +280,22 @@ io.on('connection', function (socket) {
     }
   });
 
+  socket.on('MODITEM', function (data) {
+    const type = data.type;
+    const player = game.players.find(player => player.id === socket.id)
+    if (type === 'FULL' && player.moderator) {
+      player.health += 100;
+    }
+  });
+
+  socket.on('MODITEM', function (data) {
+    const type = data.type;
+    const player = game.players.find(player => player.id === socket.id)
+    if (type === 'MOD') {
+      player.moderator = true;
+    }
+  });
+
   socket.on('PLAYER_DIRECTION_UPDATE', function (data) {
     const player = game.players.filter(player => player.id === socket.id)
     if (data.dirx !== undefined)
@@ -353,4 +379,3 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
-
