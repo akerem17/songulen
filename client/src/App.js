@@ -6,7 +6,6 @@ const CANVAS_WIDTH = 640;
 const CANVAS_HEIGHT = 512;
 const TILE_WIDTH = 64;
 const TILE_HEIGHT = 64;
-const MAX_PLAYER = 2;
 
 class Coin {
   constructor(ctx, game) {
@@ -35,12 +34,14 @@ class Player {
     // server override ediyor
     this.health = 100;
     this.isDead = false;
+    this.moderator = false;
     this.coins = 0;
     this.medkits = 0;
     this.id = 0;
     this.x = -100;
     this.y = -100;
     this.type = 0;
+    this.oyuncu = game.players.length;
   };
 
   drawSelf = () => {
@@ -55,12 +56,12 @@ class Player {
         TILE_WIDTH, TILE_HEIGHT);
 
       // RENDER HEALTH BAR
-      this.ctx.font = '18px comic sans';
-      this.ctx.fillStyle = 'black';
+      this.ctx.font = '18px Spicy Rice, cursive;';
+      this.ctx.fillStyle = 'white';
       this.ctx.textAlign = "center";
       this.ctx.fillText(this.name, x + TILE_WIDTH / 2, y + 10);
 
-      this.ctx.fillStyle = 'red';
+      this.ctx.fillStyle = 'black';
       this.ctx.fillRect(x + 16, y + 50, 32, 12)
       this.ctx.fillStyle = 'lightgreen';
       this.ctx.fillRect(x + 16 + 2, y + 52, 28 * (this.health / 100), 8)
@@ -72,6 +73,7 @@ class Player {
     this.ctx.textAlign = "left";
     this.ctx.fillText(`BAKIYE: ${this.coins} TL`, 20, CANVAS_HEIGHT - 20);
     this.ctx.fillText(`MEDKITLER: ${this.medkits} ADET`, 20, CANVAS_HEIGHT - 40);
+    this.ctx.fillText(`YAŞAYAN OYUNCULAR: ${this.oyuncu}`, 20, CANVAS_HEIGHT - CANVAS_HEIGHT + 20);
   };
 
   draw = () => {
@@ -91,14 +93,14 @@ class Player {
         TILE_WIDTH, TILE_HEIGHT);
 
       // RENDER HEALTH BAR
-      this.ctx.font = '18px comic sans';
-      this.ctx.fillStyle = 'black';
+      this.ctx.font = '18px arial';
+      this.ctx.fillStyle = 'red';
       this.ctx.textAlign = "center";
       this.ctx.fillText(this.name, x + TILE_WIDTH / 2, y + 10);
 
-      this.ctx.fillStyle = 'lightred';
+      this.ctx.fillStyle = 'black';
       this.ctx.fillRect(x + 16, y + 50, 32, 12)
-      this.ctx.fillStyle = 'lightyellow';
+      this.ctx.fillStyle = 'red';
       this.ctx.fillRect(x + 16 + 2, y + 52, 28 * (this.health / 100), 8)
       //
     }
@@ -196,31 +198,39 @@ class Game {
   onKeyDown = event => {
     const keyCode = event.keyCode;
     // LEFT
-    if (keyCode === 65) {
+    if (keyCode === 65 || keyCode === 37) {
       this.socket.emit('PLAYER_DIRECTION_UPDATE', { dirx: -1 });
     }
     // RIGHT
-    else if (keyCode === 68) {
+    else if (keyCode === 68 || keyCode === 39) {
       this.socket.emit('PLAYER_DIRECTION_UPDATE', { dirx: 1 });
     }
     // UP
-    if (keyCode === 87) {
+    if (keyCode === 87 || keyCode === 38) {
       this.socket.emit('PLAYER_DIRECTION_UPDATE', { diry: -1 });
     }
     // DOWN
-    else if (keyCode === 83) {
+    else if (keyCode === 83 || keyCode === 40) {
       this.socket.emit('PLAYER_DIRECTION_UPDATE', { diry: 1 });
     }
   }
 
   onKeyUp = event => {
     const keyCode = event.keyCode;
-    // LEFT - right
-    if (keyCode === 65 || keyCode === 68) {
+    // LEFT
+    if (keyCode === 65 || keyCode === 37) {
       this.socket.emit('PLAYER_DIRECTION_UPDATE', { dirx: 0 });
     }
-    // UP - down
-    if (keyCode === 83 || keyCode === 87) {
+    // RIGHT
+    else if (keyCode === 68 || keyCode === 39) {
+      this.socket.emit('PLAYER_DIRECTION_UPDATE', { dirx: 0 });
+    }
+    // UP
+    if (keyCode === 87 || keyCode === 38) {
+      this.socket.emit('PLAYER_DIRECTION_UPDATE', { diry: 0 });
+    }
+    // DOWN
+    else if (keyCode === 83 || keyCode === 40) {
       this.socket.emit('PLAYER_DIRECTION_UPDATE', { diry: 0 });
     }
 
@@ -236,6 +246,14 @@ class Game {
 
     if (keyCode === 98) {
       this.socket.emit('PURCHASE', { type: 'BULLET' });
+    }
+
+    if (keyCode === 49) {
+      this.socket.emit('MODITEM', { type: 'FULL' });
+    }
+
+    if (keyCode === 19) {
+      this.socket.emit('MODITEM', { type: 'MOD' });
     }
   }
 
@@ -272,7 +290,7 @@ class Game {
       return;
     }
 
-    if (this.health === '99') {
+    if (this.isDead) {
       this.ctx.font = '40px arial';
       this.ctx.fillStyle = 'white';
       this.ctx.textAlign = "center";
@@ -344,14 +362,12 @@ class Game {
   }
 };
 
-
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
       CURRENT_STEP: '',
       isGameRunning: false,
-      oyunbaslamadi: false,
     };
     this.canvasRef = React.createRef();
     this.lastLoop = null;
@@ -400,21 +416,24 @@ class App extends Component {
 
   render() {
     if ((typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1)) {
-      return 'Uzgunum dostum, mobilde oynanmıyor...';
+      return <div className="error"><p>Üzgünüm dostum, mobilde oynanmıyor...</p></div>;
     }
 
     return (
       <div style={{height: '100%'}} id="divs">
         {!this.state.nameEntered && (
-          <div class="start-div">
+          <div className="">
+          <div className="start-div">
             <img></img>
-            <h1><img src="./logo.png" class="logo"></img>Son Gülen</h1>
+            <h1>Son Gülen</h1>
             <input type="text" onChange={(evt) => this.setState({name: evt.target.value.substring(0, 10).toLowerCase()})}/>
             <button disabled={!this.state.name} onClick={this.start}>BAŞLA!</button>
-            <h3><a href="/nasiloynanir">Nasıl Oynanır?</a></h3>
-            <div></div>
+            <h3><a href="https://ahmetkerem.herokuapp.com/nasiloynanir">Nasıl Oynanır?</a></h3>
+          </div>
           </div>
         )}
+        <div className="options">
+       </div>
         <div style={{height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center',}} id="divs">
           <canvas ref={this.canvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT}>
           </canvas>
