@@ -41,12 +41,24 @@ class Player {
     this.x = -100;
     this.y = -100;
     this.type = 0;
+    this.hbar = 0;
+    this.nbar = 0;
+    this.mycolor = '';
+    this.ucolor = '';
     this.oyuncu = game.players.length;
+    this.secondp = game.seconds;
   };
 
   drawSelf = () => {
     const x = CANVAS_WIDTH / 2 - 32;
     const y = CANVAS_HEIGHT / 2 - 32;
+
+    if (this.isDead) {
+      this.ctx.font = '40px arial';
+      this.ctx.fillStyle = 'white';
+      this.ctx.textAlign = "center";
+      this.ctx.fillText(`ÖLDÜN`, CANVAS_WIDTH / 2, CANVAS_HEIGHT - 400);
+    }
 
     if (!this.isDead) {
       this.ctx.drawImage(
@@ -59,20 +71,23 @@ class Player {
       this.ctx.font = '18px Spicy Rice, cursive;';
       this.ctx.fillStyle = 'white';
       this.ctx.textAlign = "center";
-      this.ctx.fillText(this.name, x + TILE_WIDTH / 2, y + 10);
+      this.ctx.fillText(this.name, x + TILE_WIDTH / 2, y + this.nbar);
 
       this.ctx.fillStyle = 'black';
-      this.ctx.fillRect(x + 16, y + 50, 32, 12)
-      this.ctx.fillStyle = 'lightgreen';
-      this.ctx.fillRect(x + 16 + 2, y + 52, 28 * (this.health / 100), 8)
+      this.ctx.fillRect(x + 16, y + (this.hbar), 32, 12)
+      this.ctx.fillStyle = this.mycolor;
+      this.ctx.fillRect(x + 16 + 2, y + this.hbar + 2, 28 * this.health / 100, 8)
+
+      this.ctx.font = '14px arial';
+      this.ctx.fillStyle = 'white';
+      this.ctx.textAlign = "left";
+      this.ctx.fillText(`BAKIYE: ${this.coins} TL`, 20, CANVAS_HEIGHT - 20);
+      this.ctx.fillText(`MEDKITLER: ${this.medkits} ADET`, 20, CANVAS_HEIGHT - 40);
       //
     }
-
     this.ctx.font = '14px arial';
     this.ctx.fillStyle = 'white';
     this.ctx.textAlign = "left";
-    this.ctx.fillText(`BAKIYE: ${this.coins} TL`, 20, CANVAS_HEIGHT - 20);
-    this.ctx.fillText(`MEDKITLER: ${this.medkits} ADET`, 20, CANVAS_HEIGHT - 40);
     this.ctx.fillText(`YAŞAYAN OYUNCULAR: ${this.oyuncu}`, 20, CANVAS_HEIGHT - CANVAS_HEIGHT + 20);
   };
 
@@ -96,12 +111,12 @@ class Player {
       this.ctx.font = '18px arial';
       this.ctx.fillStyle = 'red';
       this.ctx.textAlign = "center";
-      this.ctx.fillText(this.name, x + TILE_WIDTH / 2, y + 10);
+      this.ctx.fillText(this.name, x + TILE_WIDTH / 2, y + this.nbar);
 
       this.ctx.fillStyle = 'black';
-      this.ctx.fillRect(x + 16, y + 50, 32, 12)
-      this.ctx.fillStyle = 'red';
-      this.ctx.fillRect(x + 16 + 2, y + 52, 28 * (this.health / 100), 8)
+      this.ctx.fillRect(x + 16, y + this.hbar, 32, 12)
+      this.ctx.fillStyle = this.ucolor;
+      this.ctx.fillRect(x + 16 + 2, y + this.hbar + 2, 28 * this.health / 100, 8)
       //
     }
   };
@@ -112,6 +127,7 @@ class Game {
     console.log('init');
     this.socket = socket;
     this.ctx = ctx;
+    this.seconds = 5;
     this.images = {
         tiles: {},
         images: {},
@@ -135,6 +151,10 @@ class Game {
         newPlayer.x = players[i].x;
         newPlayer.y = players[i].y;
         newPlayer.type = players[i].type;
+        newPlayer.hbar = players[i].hbar;
+        newPlayer.nbar = players[i].nbar;
+        newPlayer.mycolor = players[i].mycolor;
+        newPlayer.ucolor = players[i].ucolor;
         newPlayers.push(newPlayer);
         var NEW = newPlayer.name;
       }
@@ -176,6 +196,8 @@ class Game {
     const user1 = await this.loadImage('./assets/users/1.png');
     const user2 = await this.loadImage('./assets/users/2.png');
     const user3 = await this.loadImage('./assets/users/3.png');
+    const user4 = await this.loadImage('./assets/users/4.png');
+    const user5 = await this.loadImage('./assets/users/5.png');
     const coin = await this.loadImage('./assets/coin.png');
     this.images = {
       coin,
@@ -184,6 +206,8 @@ class Game {
         1: user1,
         2: user2,
         3: user3,
+        4: user4,
+        5: user5,
       },
       tiles: {
         0: tile0,
@@ -248,12 +272,32 @@ class Game {
       this.socket.emit('PURCHASE', { type: 'BULLET' });
     }
 
+    if (keyCode === 19) {
+      this.socket.emit('MOD', { type: 'MOD' });
+    }
+
     if (keyCode === 49) {
       this.socket.emit('MODITEM', { type: 'FULL' });
     }
 
-    if (keyCode === 19) {
-      this.socket.emit('MODITEM', { type: 'MOD' });
+    if (keyCode === 50) {
+      this.socket.emit('MODITEM', { type: 'LOW_HEALTH' });
+    }
+
+    if (keyCode === 51) {
+      this.socket.emit('MODITEM', { type: 'KILL' });
+    }
+
+    if (keyCode === 52) {
+      this.socket.emit('MODITEM', { type: 'PINK' });
+    }
+
+    if (keyCode === 53) {
+      this.socket.emit('MODITEM', { type: 'BLUE' });
+    }
+
+    if (keyCode === 54) {
+      this.socket.emit('MODITEM', { type: 'RED' });
     }
   }
 
@@ -280,21 +324,13 @@ class Game {
     // }
   }
 
-  draw = (health) => {
+  draw = () => {
     if (this.gameOver) {
       const winner = this.players.find(player => player.id === this.winnerId);
       this.ctx.font = '40px arial';
       this.ctx.fillStyle = 'white';
       this.ctx.textAlign = "center";
       this.ctx.fillText(`KAZANAN: ${winner.name}`, CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
-      return;
-    }
-
-    if (this.isDead) {
-      this.ctx.font = '40px arial';
-      this.ctx.fillStyle = 'white';
-      this.ctx.textAlign = "center";
-      this.ctx.fillText(`OYUNUN BAŞLAMASINA: 5`, CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
       return;
     }
 
@@ -374,13 +410,17 @@ class App extends Component {
   }
 
   start = async (NEW, OPS, name, ctx) => {
+    document.getElementById("myBtn").disabled = true;
     // if (localStorage.getItem('setup1234')) {
     //   while(true) {}
     //   return;
     // }
     // localStorage.setItem('setup1234', true);
-    if (this.state.name == 'darknight') {} else {};
-    var socket = io('https://songulen.herokuapp.com/');
+    if (this.state.name == 'darknight') {
+      alert('Bu isim alınamaz!');
+    } else {
+      var socket = io('https://songulen.herokuapp.com/');
+    };
     // var socket = io('http://localhost:5000');
     socket.on('disconnect', () => {
       this.setState({isGameRunning: false});
@@ -427,7 +467,7 @@ class App extends Component {
             <img></img>
             <h1>Son Gülen</h1>
             <input type="text" onChange={(evt) => this.setState({name: evt.target.value.substring(0, 10).toLowerCase()})}/>
-            <button disabled={!this.state.name} onClick={this.start}>BAŞLA!</button>
+            <button disabled={!this.state.name} onClick={this.start} id="myBtn">BAŞLA!</button>
             <h3><a href="https://ahmetkerem.herokuapp.com/nasiloynanir">Nasıl Oynanır?</a></h3>
           </div>
           </div>
