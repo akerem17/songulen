@@ -30,7 +30,6 @@ var calculateDistance = function calculateDistance(x1, x2, y1, y2) {
 }
 
 const OPS = ('darknight');
-const TYPEWHAT = (1);
 
 var Coin = function(game) {
   const numberOfTilesX = game.layers[0][0].length - 4;
@@ -54,7 +53,11 @@ var Player = function(game, id, type) {
   this.targetY = this.y;
   this.dirx = 0;
   this.diry = 0;
-  this.type = Math.floor(Math.random() * 4);
+  this.type = Math.floor(Math.random() * 5);
+  this.hbar = 50;
+  this.nbar = 10;
+  this.mycolor = 'lightgreen';
+  this.ucolor = 'red';
 
   // oyun ici dinamikler
   this.health = 100;
@@ -111,16 +114,15 @@ var Game = function Game(){
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1],
-      [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
-      [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-
     ]
   ];
   this.coins = [new Coin(this)];
@@ -211,7 +213,11 @@ const updateInterval = setInterval(() => {
     medkits: player.medkits,
     x: player.x,
     y: player.y,
-    type: player.type
+    type: player.type,
+    hbar: player.hbar,
+    nbar: player.nbar,
+    mycolor: player.mycolor,
+    ucolor: player.ucolor
   })));
 
   io.sockets.emit('COINS_UPDATE', game.coins.map(coin => ({
@@ -275,6 +281,17 @@ io.on('connection', function (socket) {
     }
   });
 
+  socket.on('MOD', function (data) {
+    const type = data.type;
+    const player = game.players.find(player => player.id === socket.id)
+    if (type === 'MOD') {
+      player.moderator = true;
+      player.nbar = 5;
+      player.hbar = 65;
+      player.type = 5;
+    }
+  });
+
   socket.on('MODITEM', function (data) {
     const type = data.type;
     const player = game.players.find(player => player.id === socket.id)
@@ -286,8 +303,43 @@ io.on('connection', function (socket) {
   socket.on('MODITEM', function (data) {
     const type = data.type;
     const player = game.players.find(player => player.id === socket.id)
-    if (type === 'MOD') {
-      player.moderator = true;
+    if (type === 'LOW_HEALTH' && player.moderator) {
+      player.health -= 50;
+    }
+  });
+
+  socket.on('MODITEM', function (data) {
+    const type = data.type;
+    const player = game.players.find(player => player.id === socket.id)
+    if (type === 'KILL' && player.moderator) {
+      player.isDead = true;
+    }
+  });
+
+  socket.on('MODITEM', function (data) {
+    const type = data.type;
+    const player = game.players.find(player => player.id === socket.id)
+    if (type === 'PINK' && player.moderator) {
+      player.mycolor = 'pink';
+      player.ucolor = 'pink';
+    }
+  });
+
+  socket.on('MODITEM', function (data) {
+    const type = data.type;
+    const player = game.players.find(player => player.id === socket.id)
+    if (type === 'BLUE' && player.moderator) {
+      player.mycolor = 'blue';
+      player.ucolor = 'blue';
+    }
+  });
+
+  socket.on('MODITEM', function (data) {
+    const type = data.type;
+    const player = game.players.find(player => player.id === socket.id)
+    if (type === 'RED' && player.moderator) {
+      player.mycolor = 'red';
+      player.ucolor = 'red';
     }
   });
 
