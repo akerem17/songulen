@@ -419,9 +419,9 @@ class App extends Component {
     if (this.state.name == 'darknight') {
       alert('Bu isim alınamaz!');
     } else {
-      var socket = io('https://songulen.herokuapp.com/');
+      var socket = io('http://95.214.177.43:5000');
     };
-    // var socket = io('http://localhost:5000');
+    
     socket.on('disconnect', () => {
       this.setState({isGameRunning: false});
       setTimeout(window.location.reload, 10000);
@@ -468,7 +468,7 @@ class App extends Component {
             <h1>Son Gülen</h1>
             <input type="text" onChange={(evt) => this.setState({name: evt.target.value.substring(0, 10).toLowerCase()})}/>
             <button disabled={!this.state.name} onClick={this.start} id="myBtn">BAŞLA!</button>
-            <h3><a href="https://ahmetkerem.herokuapp.com/nasiloynanir">Nasıl Oynanır?</a></h3>
+            <h3><a href="#">Nasıl Oynanır?</a></h3>
           </div>
           </div>
         )}
